@@ -7,7 +7,7 @@ using UnityEngine.InputSystem;
 /// </summary>
 public abstract class Controllable : MonoBehaviour
 {
-    public  void RandomizeData()
+    public void RandomizeData()
     {
         name = "John Test";//todo name generation
         age = Random.Range(18, 100);
@@ -58,40 +58,112 @@ public abstract class Controllable : MonoBehaviour
         movement = InputSystem.actions.FindAction("Move");
         transfer = InputSystem.actions.FindAction("Transfer");
     }
-    InputAction movement= null;
+    GameObject lineObject;
+    InputAction movement = null;
     InputAction transfer = null;
+    public Controllable? target = null;
+    float swapProgress = -1;
+    public float swapTime = 1;
     void Update()
     {
         float h = movement.ReadValue<Vector2>().x;
         float v = movement.ReadValue<Vector2>().y;
 
-        Debug.Log(h+"."+ v);
+
         var rb = GetComponent<Rigidbody2D>();
         if (isControlled)
         {
-            if(sanity <= 0)
+            GetComponent<SpriteRenderer>().color = Color.red;
+            if (sanity <= 0)
             {
                 //TODO eject
                 isControlled = false;
             }
             if (new Vector2(h, v).magnitude != 0)
             {
-                
+
                 rb.AddForce(new Vector2(h, v).normalized * CalcSpeed());
                 if (rb.linearVelocity.magnitude > maxSpeed)
                 {
                     rb.linearVelocity = rb.linearVelocity.normalized * maxSpeed;
                 }
             }
-            ControlledUpdate();
+            if (transfer.IsPressed())
+            {
+                if (target == null)
+                {
+                    var hits = Physics2D.OverlapCircleAll(transform.position, 400);
+                    float nearest = float.MaxValue;
+                    Controllable? nearestControllable = null;
+                    foreach (var hit in hits)
+                    {
+                        var controllable = hit.GetComponent<Controllable>();
+                        if (controllable != null && controllable != this && controllable.CanBeControlled())
+                        {
+                            var dist = (controllable.transform.position - transform.position).magnitude;
+                            if (dist < nearest)
+                            {
+                                nearest = dist;
+                                nearestControllable = controllable;
+                            }
+                        }
+                    }
+                    if (nearestControllable != null)
+                    {
+                        target = nearestControllable;
+                    }
+                }
+                if (lineObject == null)
+                {
+                    lineObject = new GameObject("DynamicLine");
+                    var lR = lineObject.AddComponent<LineRenderer>();
+                    lR.startWidth = 0.1f;
+                    lR.endWidth = 0.5f;
+                    lR.material = new Material(Shader.Find("Sprites/Default"));
+                    lR.positionCount = 2;
+
+                }
+                Vector3[] posisitions = new Vector3[] { transform.position, target.transform.position };
+                LineRenderer lineRenderer = lineObject.GetComponent<LineRenderer>();
+                lineRenderer.SetPositions(posisitions);
+                lineRenderer.endWidth = (swapProgress/(swapTime + 1));
+                swapProgress += Time.deltaTime;
+                    Debug.Log(swapProgress);
+                if(swapProgress > swapTime)
+                {
+                    swapProgress = -1;
+                    this.OnEject();
+                    this.isControlled = false;
+                    target.OnControl();
+                    target.isControlled = true;
+                    target = null;
+                    Destroy(lineObject);
+                    lineObject = null;
+                }
+            }
+            else if (swapProgress > -1)
+            {
+                swapProgress = -1;
+                Destroy(lineObject);
+                Debug.Log("failed");
+                lineObject = null;
+                target = null;
+            }
+
+                ControlledUpdate();
         }
         else
         {
+            GetComponent<SpriteRenderer>().color = Color.white;
             UncontrolledUpdate();
         }
-        if(new Vector2(h,v).magnitude == 0)
+        if (new Vector2(h, v).magnitude == 0)
         {
             rb.AddForce(-rb.linearVelocity * friction);
         }
+    }
+    public void OnDrawGizmos()
+    {
+        Gizmos.DrawWireSphere(transform.position, 400);
     }
 }

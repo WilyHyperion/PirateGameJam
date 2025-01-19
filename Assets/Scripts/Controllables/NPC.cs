@@ -10,6 +10,6 @@ public class TestNPC : Controllable
     }
     public override void UncontrolledUpdate()
     {
-        this.GetComponent<Rigidbody2D>().AddForce(new Vector2(Random.Range(-5,5), Random.Range(-5, 5)));  
+        GetComponent<Rigidbody2D>().linearVelocity = new Vector2(Random.Range(-1.0f, 1.0f), Random.Range(-1.0f, 1.0f));
     }
 }
