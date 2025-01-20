@@ -6,7 +6,10 @@ public class TestNPC : Controllable, IDialogSource
 
     public void ModifyDialog(Dialog dialog, IDialogSource you, Controllable player)
     {
-        dialog.AddOption("Option" + Random.Range(0, 25), (a, b) => { });
+        string msg = "Option" + Random.Range(0, 25);
+        dialog.AddOption(msg, () => {
+            Debug.Log(":" + msg  );
+        });
     }
 
     public override void UncontrolledUpdate()

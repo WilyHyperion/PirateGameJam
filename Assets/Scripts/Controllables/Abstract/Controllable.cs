@@ -153,9 +153,9 @@ public abstract class Controllable : MonoBehaviour
                 lineRenderer.SetPositions(posisitions);
                 lineRenderer.endWidth = (swapProgress/(swapTime + 1));
                 swapProgress += Time.deltaTime;
-                    Debug.Log(swapProgress);
                 if(swapProgress > swapTime)
                 {
+                    CameraScript.StartSmoothMove(target.transform.position, 1f);
                     swapProgress = -1;
                     this.OnEject();
                     this.isControlled = false;
@@ -171,7 +171,6 @@ public abstract class Controllable : MonoBehaviour
             {
                 swapProgress = -1;
                 Destroy(lineObject);
-                Debug.Log("failed");
                 lineObject = null;
                 target = null;
             }

@@ -6,6 +6,7 @@ using UnityEditor.Overlays;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 public class DialogWheel : MonoBehaviour
 {
@@ -47,6 +48,7 @@ public class DialogWheel : MonoBehaviour
 
             if(Location == Vector2.zero)
             {
+                
                 dialog = new Dialog();
                 //Todo populate properly by searching nearby objects
                 PopulateDialog();
@@ -77,24 +79,23 @@ public class DialogWheel : MonoBehaviour
 
 
                     //Text
-
+                    //doesnt really work and has gotten crazy bloatted from failed rewrite attempts. Probably best to rewrite this soon
                     Vector2 RotatedVector = new Vector2(1, 0).RotateBy(i * RotationPerOption);
                     var parent = new GameObject($"UiTextParent{i}");
                     parent.AddComponent<Canvas>();
                     var rect = parent.GetComponent<RectTransform>();
                     parent.transform.SetParent(this.transform);
                     rect.position += new Vector3(RotatedVector.x, RotatedVector.y, 0) * radi/2.5f ;
-                    parent.transform.position += new Vector3(rect.position.x, rect.position.y, 0);
-                    rect.sizeDelta = new Vector2(radi,0).RotateBy((float)((i) * RotationPerOption));   
-                    Debug.Log(rect.sizeDelta);
+                    
                     var text = new GameObject($"UiText{i}");
                     text.transform.SetParent(parent.transform);
                     var txt = text.AddComponent<TextMeshProUGUI>();
+                    txt.extraPadding = true;
                     txt.text = $"" + dialog.options.Keys.ElementAt(i);
                     //Higher font size + scaling down creates less blurry text
                     txt.fontSize = 25;
                     txt.transform.localScale = new Vector3(0.005f, 0.005f, 0.005f);
-                    txt.transform.position = this.transform.position + new Vector3(parent.transform.position.x, parent.transform.position.y, 0);
+                    txt.transform.position = this.transform.position + new Vector3(parent.transform.position.x , parent.transform.position.y, 0);
                     txt.textWrappingMode = TextWrappingModes.Normal;
                     txt.alignment = TextAlignmentOptions.MidlineLeft;
 
@@ -109,7 +110,13 @@ public class DialogWheel : MonoBehaviour
         {
             if (Location != Vector2.zero)
             {
-
+                var mousePos = new Vector3(mouse.position.x.ReadValue(), mouse.position.y.ReadValue(), 0);
+                var actPos = UnityEngine.Camera.main.ScreenToWorldPoint(mousePos);
+                float angle = Mathf.Atan2(actPos.y - transform.position.y, actPos.x - transform.position.x);
+                angle = (angle + Mathf.PI * 2) % (Mathf.PI * 2);
+                int index = (int)(angle / (Mathf.PI * 2 / dialog.options.Count));
+                Debug.Log(index);
+                dialog.options.Values.ElementAt(index).Invoke();
                 ToggleDraw();
                 CleanUpLines();
                 Location = Vector2.zero;
@@ -126,7 +133,6 @@ public class DialogWheel : MonoBehaviour
         {
             foreach (var obj in Physics2D.OverlapCircleAll(player.transform.position, player.DialogSearchRadius))
             {
-                Debug.Log(obj);
                 var ds = obj.GetComponent<IDialogSource>();
                 if (ds != null)
                 {

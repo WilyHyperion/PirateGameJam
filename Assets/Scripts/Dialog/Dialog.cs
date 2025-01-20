@@ -9,7 +9,7 @@ public class Dialog
     /// </summary>
     /// <param name="name"></param>
     /// <param name="action"></param>
-    public void AddOption(string name, Action<Controllable, Controllable> action)
+    public void AddOption(string name, Action action)
     {
         if(options.ContainsKey(name))
         {
@@ -18,5 +18,5 @@ public class Dialog
         }
         options.Add(name, action);
     }   
-    public Dictionary<string, Action<Controllable, Controllable>> options =     new Dictionary<string, Action<Controllable, Controllable>>();
+    public Dictionary<string, Action> options =     new Dictionary<string, Action>();
 }
