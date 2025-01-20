@@ -1,4 +1,5 @@
 
+using System.Collections.Generic;
 using UnityEngine;
 
 using UnityEngine.InputSystem;
@@ -7,6 +8,8 @@ using UnityEngine.InputSystem;
 /// </summary>
 public abstract class Controllable : MonoBehaviour
 {
+    public static Controllable Current = null;
+    public List<DialogModifier> Dialogs = new List<DialogModifier>();
     public void RandomizeData()
     {
         name = "John Test";//todo name generation
@@ -19,7 +22,7 @@ public abstract class Controllable : MonoBehaviour
     public bool isControlled = false;
     public int sanity = 100;
     public float friction = 0.9f;
-    public string name = "John Test";
+    public string fullname = "John Test";
     public int age = 20;
     public float height = 2.5f;
     public float weight = 180;
@@ -38,14 +41,23 @@ public abstract class Controllable : MonoBehaviour
     public virtual void UncontrolledUpdate()
     {
     }
-
+    /// <summary>
+    /// Called while the player is in range of this body and holding swap
+    /// </summary>
+    /// <returns>If this body should count as a vaild option</returns>
     public virtual bool CanBeControlled()
     {
         return true;
     }
+    /// <summary>
+    /// called when the player takes control of this body
+    /// </summary>
     public virtual void OnControl()
     {
     }
+    /// <summary>
+    /// Called when the player leaves this body
+    /// </summary>
     public virtual void OnEject()
     {
     }
@@ -61,9 +73,21 @@ public abstract class Controllable : MonoBehaviour
     GameObject lineObject;
     InputAction movement = null;
     InputAction transfer = null;
+    /// <summary>
+    /// Currently channeling a swap to
+    /// </summary>
     public Controllable? target = null;
     float swapProgress = -1;
+    /// <summary>
+    /// Time in seconds minus 1 to swap to another controllable
+    /// </summary>
     public float swapTime = 1;
+    /// <summary>
+    /// The radius to search for other controllables to swap to
+    /// </summary>
+    public float DialogSearchRadius = 20f;
+    public float ControlRange = 20f;
+
     void Update()
     {
         float h = movement.ReadValue<Vector2>().x;
@@ -73,6 +97,7 @@ public abstract class Controllable : MonoBehaviour
         var rb = GetComponent<Rigidbody2D>();
         if (isControlled)
         {
+            Current = this;
             GetComponent<SpriteRenderer>().color = Color.red;
             if (sanity <= 0)
             {
@@ -92,7 +117,7 @@ public abstract class Controllable : MonoBehaviour
             {
                 if (target == null)
                 {
-                    var hits = Physics2D.OverlapCircleAll(transform.position, 400);
+                    var hits = Physics2D.OverlapCircleAll(transform.position, ControlRange);
                     float nearest = float.MaxValue;
                     Controllable? nearestControllable = null;
                     foreach (var hit in hits)
@@ -139,6 +164,7 @@ public abstract class Controllable : MonoBehaviour
                     target = null;
                     Destroy(lineObject);
                     lineObject = null;
+                    Current = target;
                 }
             }
             else if (swapProgress > -1)
