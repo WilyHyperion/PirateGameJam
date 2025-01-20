@@ -15,9 +15,7 @@ public class CameraScript : MonoBehaviour
     void Update()
     {
 
-        Debug.Log(goal);
         if (goal != null) {
-            Debug.Log("Lerping");
             progress += Time.deltaTime;
             if (progress >= totalTime)
             {

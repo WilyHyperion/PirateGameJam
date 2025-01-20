@@ -13,7 +13,7 @@ public class DialogWheel : MonoBehaviour
     public Dialog dialog;
     Vector2 Location = Vector2.zero;
     InputAction open;
-    Mouse mouse; 
+    Mouse mouse;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -36,19 +36,19 @@ public class DialogWheel : MonoBehaviour
             canvas.enabled = visable;
         }
     }
-    
+
     //got  to be a better way to get this
-    const float radi = 1.5f;
+    const float radi = 7.5f;
     const float innerRadi = 0.5f;
     // Update is called once per frame
     void Update()
     {
-        if(open.IsPressed())
+        if (open.IsPressed())
         {
 
-            if(Location == Vector2.zero)
+            if (Location == Vector2.zero)
             {
-                
+
                 dialog = new Dialog();
                 //Todo populate properly by searching nearby objects
                 PopulateDialog();
@@ -59,7 +59,7 @@ public class DialogWheel : MonoBehaviour
 
                 transform.position = actPos;
                 var RotationPerOption = (Mathf.PI * 2) / dialog.options.Count;
-                for(int i = 0; i < dialog.options.Count; i++)
+                for (int i = 0; i < dialog.options.Count; i++)
                 {
                     //Line
                     var obj = new GameObject($"UiLine{i}");
@@ -69,9 +69,9 @@ public class DialogWheel : MonoBehaviour
                     pos[0] = this.transform.position;
                     Vector2 direction = new Vector2(1, 0).RotateBy(i * RotationPerOption);
                     Vector3 outer = new Vector3(direction.x, direction.y, 0) * radi;
-                    pos[1] = pos[0] + outer; 
+                    pos[1] = pos[0] + outer;
                     lr.SetPositions(pos);
-                    lr.SetWidth(0.05f, 0.05f);
+                    lr.SetWidth(0.1f, 0.1f);
                     lr.material = new Material(Shader.Find("Sprites/Default"));
                     lr.startColor = Color.red;
                     lr.endColor = Color.red;
@@ -80,13 +80,12 @@ public class DialogWheel : MonoBehaviour
 
                     //Text
                     //doesnt really work and has gotten crazy bloatted from failed rewrite attempts. Probably best to rewrite this soon
-                    Vector2 RotatedVector = new Vector2(1, 0).RotateBy(i * RotationPerOption);
+                    Vector2 RotatedVector = new Vector2(1, 0).RotateBy(i * RotationPerOption + (RotationPerOption/2));
                     var parent = new GameObject($"UiTextParent{i}");
                     parent.AddComponent<Canvas>();
                     var rect = parent.GetComponent<RectTransform>();
                     parent.transform.SetParent(this.transform);
-                    rect.position += new Vector3(RotatedVector.x, RotatedVector.y, 0) * radi/2.5f ;
-                    
+                    rect.position += new Vector3(RotatedVector.x, RotatedVector.y, 0) * radi ;
                     var text = new GameObject($"UiText{i}");
                     text.transform.SetParent(parent.transform);
                     var txt = text.AddComponent<TextMeshProUGUI>();
@@ -94,15 +93,15 @@ public class DialogWheel : MonoBehaviour
                     txt.text = $"" + dialog.options.Keys.ElementAt(i);
                     //Higher font size + scaling down creates less blurry text
                     txt.fontSize = 25;
-                    txt.transform.localScale = new Vector3(0.005f, 0.005f, 0.005f);
-                    txt.transform.position = this.transform.position + new Vector3(parent.transform.position.x , parent.transform.position.y, 0);
+                    txt.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
+                    txt.transform.position = this.transform.position + new Vector3(parent.transform.position.x, parent.transform.position.y, 0);
                     txt.textWrappingMode = TextWrappingModes.Normal;
                     txt.alignment = TextAlignmentOptions.MidlineLeft;
 
 
                 }
                 ToggleDraw();
-                
+
             }
 
         }
@@ -112,17 +111,20 @@ public class DialogWheel : MonoBehaviour
             {
                 var mousePos = new Vector3(mouse.position.x.ReadValue(), mouse.position.y.ReadValue(), 0);
                 var actPos = UnityEngine.Camera.main.ScreenToWorldPoint(mousePos);
-                float angle = Mathf.Atan2(actPos.y - transform.position.y, actPos.x - transform.position.x);
-                angle = (angle + Mathf.PI * 2) % (Mathf.PI * 2);
-                int index = (int)(angle / (Mathf.PI * 2 / dialog.options.Count));
-                Debug.Log(index);
-                dialog.options.Values.ElementAt(index).Invoke();
+                float dist = Vector2.Distance(actPos, transform.position);
+                if (dist > innerRadi)
+                {
+                    float angle = Mathf.Atan2(actPos.y - transform.position.y, actPos.x - transform.position.x);
+                    angle = (angle + Mathf.PI * 2) % (Mathf.PI * 2);
+                    int index = (int)(angle / (Mathf.PI * 2 / dialog.options.Count));
+                    dialog.options.Values.ElementAt(index).Invoke();
+                }
                 ToggleDraw();
                 CleanUpLines();
                 Location = Vector2.zero;
             }
 
-            
+
         }
     }
 
@@ -149,10 +151,10 @@ public class DialogWheel : MonoBehaviour
     {
         foreach (Transform child in transform)
         {
-            if(child.name.Contains("Ui"))
+            if (child.name.Contains("Ui"))
             {
                 Destroy(child.gameObject);
-            }   
+            }
         }
     }
 }
