@@ -65,6 +65,7 @@ public class DialogWheel : MonoBehaviour
                     var obj = new GameObject($"UiLine{i}");
                     obj.transform.parent = this.transform;
                     var lr = obj.AddComponent<LineRenderer>();
+                    lr.sortingLayerName = "UI";
                     Vector3[] pos = new Vector3[2];
                     pos[0] = this.transform.position;
                     Vector2 direction = new Vector2(1, 0).RotateBy(i * RotationPerOption);
@@ -82,20 +83,22 @@ public class DialogWheel : MonoBehaviour
                     //doesnt really work and has gotten crazy bloatted from failed rewrite attempts. Probably best to rewrite this soon
                     Vector2 RotatedVector = new Vector2(1, 0).RotateBy(i * RotationPerOption + (RotationPerOption/2));
                     var parent = new GameObject($"UiTextParent{i}");
-                    parent.AddComponent<Canvas>();
+                    
+                    var c  = parent.AddComponent<Canvas>();
+                    c.sortingLayerName = "UI";
                     var rect = parent.GetComponent<RectTransform>();
                     parent.transform.SetParent(this.transform);
-                    rect.position += new Vector3(RotatedVector.x, RotatedVector.y, 0) * radi ;
+                    rect.position += new Vector3(RotatedVector.x, RotatedVector.y, 0) * radi/2;
                     var text = new GameObject($"UiText{i}");
                     text.transform.SetParent(parent.transform);
                     var txt = text.AddComponent<TextMeshProUGUI>();
                     txt.extraPadding = true;
                     txt.text = $"" + dialog.options.Keys.ElementAt(i);
                     //Higher font size + scaling down creates less blurry text
-                    txt.fontSize = 25;
+                    txt.fontSize = 50;
                     txt.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
                     txt.transform.position = this.transform.position + new Vector3(parent.transform.position.x, parent.transform.position.y, 0);
-                    txt.textWrappingMode = TextWrappingModes.Normal;
+                    txt.textWrappingMode = TextWrappingModes.PreserveWhitespace;
                     txt.alignment = TextAlignmentOptions.MidlineLeft;
 
 

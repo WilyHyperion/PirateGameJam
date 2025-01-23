@@ -8,11 +8,13 @@ using UnityEngine.InputSystem;
 /// </summary>
 public abstract class Controllable : MonoBehaviour
 {
+
+    public int Suspicion = 0;
     public static Controllable Current = null;
     public List<DialogModifier> Dialogs = new List<DialogModifier>();
     public void RandomizeData()
     {
-        name = "John Test";//todo name generation
+        fullname = "John Test";//todo name generation
         age = Random.Range(18, 100);
         height = Random.Range(1.5f, 2.5f);
         weight = Random.Range(50, 100);
@@ -65,8 +67,8 @@ public abstract class Controllable : MonoBehaviour
     {
         return baseSpeed;
     }
-    void Start()
-    {
+    public void Start()
+    {   
         movement = InputSystem.actions.FindAction("Move");
         transfer = InputSystem.actions.FindAction("Transfer");
     }
@@ -87,6 +89,8 @@ public abstract class Controllable : MonoBehaviour
     /// </summary>
     public float DialogSearchRadius = 20f;
     public float ControlRange = 20f;
+    public  int Clearance;
+    public  int currentZoneClearance;
 
     void Update()
     {
@@ -174,21 +178,45 @@ public abstract class Controllable : MonoBehaviour
                 lineObject = null;
                 target = null;
             }
-
-                ControlledUpdate();
+            if (new Vector2(h, v).magnitude == 0)
+            {
+                rb.AddForce(-rb.linearVelocity * friction);
+            }
+            ControlledUpdate();
         }
         else
         {
             GetComponent<SpriteRenderer>().color = Color.white;
             UncontrolledUpdate();
         }
-        if (new Vector2(h, v).magnitude == 0)
-        {
-            rb.AddForce(-rb.linearVelocity * friction);
-        }
+
     }
     public void OnDrawGizmos()
     {
         Gizmos.DrawWireSphere(transform.position, 400);
+    }
+    public bool inIllegalZone
+    {
+        get
+        {
+            return this.Clearance < this.currentZoneClearance;
+        }
+    }
+    public bool onSpotByCamera()
+    {
+        return true;
+    }
+
+    public void onEnterIllegalZone()
+    {
+    }
+    public void onExitIllegalZone()
+    {
+
+    }
+
+    public bool onSpotByGuard()
+    {
+        return true;
     }
 }
