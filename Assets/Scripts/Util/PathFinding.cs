@@ -52,7 +52,6 @@ public static class PathFinding
             Iterations++;
             if (Iterations % iterationsPerFrame == 0)
             {
-                Debug.Log("Yield");
                 yield return null;
             }
             //grab the next most likely spot
@@ -68,7 +67,6 @@ public static class PathFinding
                 path.Add(gridcomp.CellToWorld(startTile));
                 path.Reverse();
                 g.path = path.ToArray();
-                Debug.Log("PathFound");
                 g.CurrentlyPathFinding = false;
                 Debug.Log(path);
                 yield break;
@@ -99,7 +97,6 @@ public static class PathFinding
         }
         //failed to find a path
 
-        Debug.Log("Failed To Find Path");
         g.state = GuardState.Patrol;
         g.CurrentlyPathFinding = false;
     }

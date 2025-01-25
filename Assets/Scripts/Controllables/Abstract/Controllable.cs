@@ -8,7 +8,8 @@ using UnityEngine.InputSystem;
 /// </summary>
 public abstract class Controllable : MonoBehaviour
 {
-
+    public GameObject inv;  
+    public SpriteRenderer spriteRender;
     public int Suspicion = 0;
     public static Controllable Current = null;
     public List<DialogModifier> Dialogs = new List<DialogModifier>();
@@ -67,10 +68,19 @@ public abstract class Controllable : MonoBehaviour
     {
         return baseSpeed;
     }
+    public HotbarSlot[] hotbarSlots = null;
     public void Start()
     {   
+        spriteRender = GetComponent<SpriteRenderer>();
         movement = InputSystem.actions.FindAction("Move");
         transfer = InputSystem.actions.FindAction("Transfer");
+        inv = GameObject.Find("Inventory");
+        hotbarSlots = new HotbarSlot[inv.transform.childCount];
+        for(var i = 0; i < inv.transform.childCount; i++)
+        {
+            var slot = inv.transform.GetChild(i).GetComponent<HotbarSlot>();
+            hotbarSlots[i] = slot;
+        }   
     }
     GameObject lineObject;
     InputAction movement = null;
@@ -189,6 +199,13 @@ public abstract class Controllable : MonoBehaviour
             GetComponent<SpriteRenderer>().color = Color.white;
             UncontrolledUpdate();
         }
+        if (GetComponent<Rigidbody2D>().linearVelocityX > 0)
+        {
+            spriteRender.flipX = false;
+        }
+        else if (GetComponent<Rigidbody2D>().linearVelocityX < 0) {
+            spriteRender.flipX = true;
+        }
 
     }
     public void OnDrawGizmos()
@@ -218,5 +235,24 @@ public abstract class Controllable : MonoBehaviour
     public bool onSpotByGuard()
     {
         return true;
+    }
+
+    internal bool canOpenDoor(LockedDoor lockedDoor)
+    {
+        return true;
+    }
+    public Item[] items = new Item[3];
+    public bool AddItem(Item item)
+    {
+        for (int i = 0; i < items.Length; i++)
+        {
+            if (items[i] == null)
+            {
+                items[i] = item;
+                hotbarSlots[i].Item = item;
+                return true;
+            }
+        }
+        return false;
     }
 }

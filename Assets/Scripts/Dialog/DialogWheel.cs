@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using UnityEngine.UIElements;
+using static System.Net.Mime.MediaTypeNames;
 
 public class DialogWheel : MonoBehaviour
 {
@@ -38,7 +39,7 @@ public class DialogWheel : MonoBehaviour
     }
 
     //got  to be a better way to get this
-    const float radi = 7.5f;
+    const float radi =15f;
     const float innerRadi = 0.5f;
     // Update is called once per frame
     void Update()
@@ -81,21 +82,25 @@ public class DialogWheel : MonoBehaviour
 
                     //Text
                     //doesnt really work and has gotten crazy bloatted from failed rewrite attempts. Probably best to rewrite this soon
-                    Vector2 RotatedVector = new Vector2(1, 0).RotateBy(i * RotationPerOption + (RotationPerOption/2));
+                    Vector2 RotatedVector = new Vector2(1, 0).RotateBy(i * RotationPerOption + (RotationPerOption / 2));
                     var parent = new GameObject($"UiTextParent{i}");
-                    
-                    var c  = parent.AddComponent<Canvas>();
+                    var c = parent.AddComponent<Canvas>();
                     c.sortingLayerName = "UI";
                     var rect = parent.GetComponent<RectTransform>();
+                    rect.sizeDelta = new Vector2(200, 100);
                     parent.transform.SetParent(this.transform);
-                    rect.position += new Vector3(RotatedVector.x, RotatedVector.y, 0) * radi/2;
+                    rect.position += new Vector3(RotatedVector.x, RotatedVector.y, 0) * radi / 2;
                     var text = new GameObject($"UiText{i}");
                     text.transform.SetParent(parent.transform);
                     var txt = text.AddComponent<TextMeshProUGUI>();
+                    var txtRect = text.GetComponent<RectTransform>();
+                    txtRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 400);
+                    txtRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 2000);
+                   
                     txt.extraPadding = true;
                     txt.text = $"" + dialog.options.Keys.ElementAt(i);
                     //Higher font size + scaling down creates less blurry text
-                    txt.fontSize = 50;
+                    txt.fontSize = 40;
                     txt.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
                     txt.transform.position = this.transform.position + new Vector3(parent.transform.position.x, parent.transform.position.y, 0);
                     txt.textWrappingMode = TextWrappingModes.PreserveWhitespace;
